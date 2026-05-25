@@ -1,0 +1,61 @@
+# =================================================================
+#  HAUS UND HANG — Apache-Konfiguration für Hostinger Shared Hosting
+# =================================================================
+
+# --- HTTPS-Redirect ------------------------------------------------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteCond %{HTTPS} !=on
+  RewriteCond %{HTTP:X-Forwarded-Proto} !=https
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+</IfModule>
+
+# --- Default-Index-Fallback (für trailingSlash:true) ---------------
+DirectoryIndex index.html
+
+# --- Compression ---------------------------------------------------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE image/svg+xml
+</IfModule>
+
+# --- Cache-Control -------------------------------------------------
+# Frames (immutable, ~85 MB Sequence) — 1 Jahr Browser-Cache.
+<FilesMatch "\.(jpg|jpeg|png|webp|gif|svg)$">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </IfModule>
+</FilesMatch>
+
+# Fonts — 1 Jahr.
+<FilesMatch "\.(woff|woff2|ttf|otf|eot)$">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </IfModule>
+</FilesMatch>
+
+# JS/CSS Next.js Chunks haben Hashes im Namen → safe für long-cache.
+<FilesMatch "^_next.*\.(js|css)$">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </IfModule>
+</FilesMatch>
+
+# HTML — kurz cachen (5 Minuten) damit Deploys schnell durchschlagen.
+<FilesMatch "\.html$">
+  <IfModule mod_headers.c>
+    Header set Cache-Control "public, max-age=300, must-revalidate"
+  </IfModule>
+</FilesMatch>
+
+# --- Security-Headers ----------------------------------------------
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+  Header set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+# --- 404-Fallback (Next.js generiert 404.html aus app/not-found.tsx) ---
+ErrorDocument 404 /404.html

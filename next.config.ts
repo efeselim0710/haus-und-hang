@@ -1,33 +1,20 @@
 import type { NextConfig } from "next";
 
-// Frame-Sequence (public/video/frames/*.jpg) wird via Canvas/new Image() im
-// Hero geladen — geht NICHT durch next/image. Deshalb hier kein
-// images.unoptimized-Pfad nötig.
+// Static Export für Hostinger (und alle anderen plain Web-Hoster).
+// next build erzeugt einen `out/` Folder mit HTML/CSS/JS/Assets, der 1:1
+// auf Apache/nginx/etc. läuft. Cache-Headers + Routing kommen via
+// public/.htaccess (Apache) rein.
+//
+// Constraints im Export-Mode:
+// - headers()/redirects()/rewrites() NICHT supported → .htaccess
+// - next/image default-Loader NICHT supported → images.unoptimized
+// - trailingSlash: true erleichtert Apache-Routing (jede Route wird zu /name/index.html)
 const nextConfig: NextConfig = {
+  output: "export",
+  trailingSlash: true,
   poweredByHeader: false,
   images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "images.unsplash.com" },
-      { protocol: "https", hostname: "images.pexels.com" },
-    ],
-  },
-  // Frame-Sequence (immutable, ~85 MB) langfristig im Browser-Cache halten —
-  // sonst lädt Vercel/CDN bei jedem Reload alle 290 sichtbaren Frames neu.
-  async headers() {
-    return [
-      {
-        source: "/video/frames/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
-      {
-        source: "/video/:path*",
-        headers: [
-          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
-        ],
-      },
-    ];
+    unoptimized: true,
   },
 };
 
