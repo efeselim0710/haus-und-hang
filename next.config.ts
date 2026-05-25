@@ -11,6 +11,24 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.pexels.com" },
     ],
   },
+  // Frame-Sequence (immutable, ~85 MB) langfristig im Browser-Cache halten —
+  // sonst lädt Vercel/CDN bei jedem Reload alle 290 sichtbaren Frames neu.
+  async headers() {
+    return [
+      {
+        source: "/video/frames/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/video/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
