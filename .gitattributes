@@ -2,4 +2,3 @@
 # Aktiv, sobald `git lfs install` einmalig auf dieser Maschine ausgeführt wurde.
 # Ohne LFS greift diese Regel nicht — Frames landen dann normal in der Git-History
 # (funktioniert, Repo wird halt grösser).
-public/video/frames/*.jpg filter=lfs diff=lfs merge=lfs -text
